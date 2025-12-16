@@ -1,0 +1,25 @@
+# conda env create -f algebra.yml
+
+name: algebra
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12.7
+  - pytorch
+  - pytorch-cuda=12.4
+  - numpy
+  - matplotlib
+  - tqdm
+  - wandb
+  - ipympl
+  - jupyter
+  - pandas
+  - pip
+  - plotly
+  - scikit-learn
+  - sympy
+  - pip:
+    - nnsight
