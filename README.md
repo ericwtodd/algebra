@@ -3,13 +3,14 @@
 ###  [Project Website](https://algebra.baulab.info) | [Arxiv Preprint (Coming Soon!)] | [HuggingFace (Coming Soon!)] <br>
 
 <div align='center'>
-<img src = 'assets/algebra-thumb.png'>
+<!-- <img src = 'assets/data_assign_generate.gif'> -->
+<img src = 'assets/algebra-thumb.png' style='width:95%'>
 </div>
 
 ## Setup
 
 We use conda as a package manager. 
-The environment used for this project can be found in the `env/algebra.yml` file.
+The environment used for this project can be found in `env/algebra.yml`.
 To install, you can run: 
 ```
 conda env create -f algebra.yml
