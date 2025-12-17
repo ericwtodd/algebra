@@ -20,10 +20,7 @@ def main(args) -> None:
     # Setup task
     task = TASK_MAP[args.task_name](**args.task_config)
 
-    if args.task_name == 'navigation':
-        vocab_size = task.vocab_size
-    else:
-        vocab_size = -(-task.vocab_size // 32) * 32
+    vocab_size = -(-task.vocab_size // 32) * 32
 
     # Setup model
     model_params = {
@@ -64,7 +61,7 @@ def main(args) -> None:
     )
 
     # To save in metdata.json
-    metadata = { 'args': vars(args), 'model_params': model_params }
+    metadata = {'args': vars(args), 'model_params': model_params }
 
     # Train the model
     trainer = Trainer(training_params)
@@ -87,15 +84,15 @@ if __name__ == "__main__":
 
     # Training parameters
     parser.add_argument("--output_dir", type=str, default="outputs")
-    parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--leftpad", type=bool, default=False)
-    parser.add_argument("--n_steps", type=int, default=1000000)
-    parser.add_argument("--lr", type=float, default=4e-4)
-    parser.add_argument("--lr_warmup_steps", type=int, default=500)
-    parser.add_argument("--evaluation_steps", type=int, default=1000)
+    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--n_steps", type=int, default=200001)
+    parser.add_argument("--lr", type=float, default=1e-5)
+    parser.add_argument("--lr_warmup_steps", type=int, default=1000)
+    parser.add_argument("--evaluation_steps", type=int, default=100)
     parser.add_argument("--checkpoint_steps", type=int, default=5000)
     parser.add_argument("--final_token_only", type=bool, default=False)
-    parser.add_argument("--seed", type=int, default=)
+    parser.add_argument("--seed", type=int, default=9999)
 
     # Wandb parameters
     parser.add_argument("--use_wandb", type=bool, default=True)

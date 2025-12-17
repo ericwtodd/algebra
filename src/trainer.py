@@ -73,7 +73,7 @@ class Trainer:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tester = Tester(config)
 
-    def train_step(self, model, task, config, optimiser, scheduler):
+    def train_step(self, model, task, config, optimizer, scheduler):
         """
         Executes a single training step.
         
@@ -84,7 +84,7 @@ class Trainer:
             model: PyTorch model to train
             task: Task object for data generation
             config: Training configuration object
-            optimiser: PyTorch optimizer
+            optimizer: PyTorch optimizer
             scheduler: Learning rate scheduler
         
         Returns:
@@ -135,9 +135,9 @@ class Trainer:
         loss = loss_fn(masked_outputs, masked_targets)
 
         # Backward pass
-        optimiser.zero_grad()
+        optimizer.zero_grad()
         loss.backward()
-        optimiser.step()
+        optimizer.step()
         scheduler.step()
 
         # Compute metrics
@@ -178,18 +178,18 @@ class Trainer:
         model = model.to(self.device)
 
         # Setup optimizer and learning rate scheduler
-        optimiser = torch.optim.AdamW(
+        optimizer = torch.optim.AdamW(
             params=model.parameters(),
             lr=config.lr
         )
         train_scheduler = CosineAnnealingLR(
-            optimizer=optimiser,
+            optimizer=optimizer,
             T_max=config.n_steps,
             eta_min=0
         )
-        warmup_scheduler = LinearLR(optimiser,
+        warmup_scheduler = LinearLR(optimizer,
                 start_factor=1e-4, end_factor=1, total_iters=config.lr_warmup_steps)
-        scheduler = SequentialLR(optimiser,
+        scheduler = SequentialLR(optimizer,
                 [warmup_scheduler, train_scheduler], [config.lr_warmup_steps])
 
         if config.use_wandb:
@@ -250,15 +250,14 @@ class Trainer:
             if config.checkpoint_steps and (step % config.checkpoint_steps == 0):
                 torch.save(model.state_dict(), f'{output_dir}/models/algebra_gpt_{step}.pt')
 
-            train_loss = self.train_step(model, task, config, optimiser, scheduler)
+            train_loss = self.train_step(model, task, config, optimizer, scheduler)
             pbar.set_postfix({'Step': step, 'Train Loss': round(train_loss, 4)})
             losses.append(train_loss)
             log |= {
                 "train_loss": train_loss,
-                "learning_rate": optimiser.param_groups[0]["lr"],
+                "learning_rate": optimizer.param_groups[0]["lr"],
                 "step": step
             }
-            losses.append(train_loss)
 
             if config.use_wandb:
                 wandb.log(log)
