@@ -1,8 +1,8 @@
 import random
 import torch
-from .data_utils import determine_associative_pairs
+from .group_utils import determine_associative_pairs
 
-### Pseudo-Code Versions of Algorithmic Verification
+### Simple Versions of Algorithmic Verification
 def check_copyable(sequence):
     """
     Determines whether copying could solve the sequence.
@@ -120,7 +120,6 @@ def check_associative(sequence):
         if all_facts_exist: # If there is a triplet of facts that compose to solve the query
             is_associative=True
             break
-    
     return is_associative
 
 ### Optimized Torch Versions of Algorithmic Verification

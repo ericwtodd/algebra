@@ -23,6 +23,7 @@ class MixGroupAddition:
         self.max_order = max_order
         self.mix = mix
         self.holdout_zero = holdout_zero
+        self.seed = seed
         self.prng = random.Random(seed)
 
         # Setup the vocabulary
@@ -40,6 +41,12 @@ class MixGroupAddition:
 
     def _task_name(self):
         return 'mixgroup'
+    
+    def __repr__(self):
+        return (f"{self.__class__.__name__}(num_symbols={self.num_symbols}, "
+                f"max_order={self.max_order}, mix={self.mix}, "
+                f"holdout_zero={self.holdout_zero}, seed={self.seed})")
+
 
     def sample_batch(self, batch_size: int,
             k_shots: int = 200, hold_out: int | list = 0,
