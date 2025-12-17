@@ -19,8 +19,10 @@ conda activate algebra
 
 ## Data
 <!-- The datasets used in our project can be found in the `dataset_files` folder. -->
+More details coming soon. For now, checkout `src/tasks`.
 
 ## Code
+More details on code organization coming soon.
 
 
 ## Citing our work
