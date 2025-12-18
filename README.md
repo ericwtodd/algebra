@@ -1,6 +1,6 @@
 # In-Context Algebra
-<!-- ###  [Project Website](https://algebra.baulab.info) | [Arxiv Preprint](https://arxiv.org/pdf/2512.xxxxx) | [HuggingFace] <br> -->
-###  [Project Website](https://algebra.baulab.info) | [Arxiv Preprint (Coming Soon!)] | [HuggingFace (Coming Soon!)] <br>
+
+###  [Project Website](https://algebra.baulab.info) | [Arxiv Preprint (Coming Soon!)] | [Models (Coming Soon!)] <br>
 
 <div align='center'>
 <!-- <img src = 'assets/data_assign_generate.gif'> -->
@@ -18,8 +18,9 @@ conda activate algebra
 ```
 
 ## Data
-<!-- The datasets used in our project can be found in the `dataset_files` folder. -->
-More details coming soon. For now, checkout `src/tasks`.
+<!-- At a high-level, the in-context algebra task involves simulating a mixture of finite algebraic groups.  -->
+<!-- Our in-context algebra sequences are generated as a mixture of finite algebraic groups.  -->
+More details about our data generating code can be found in the [`tasks`](/src/tasks) directory.
 
 ## Code
 More details on code organization coming soon.
