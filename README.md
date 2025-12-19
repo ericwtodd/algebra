@@ -1,6 +1,6 @@
 # In-Context Algebra
 
-###  [Project Website](https://algebra.baulab.info) | [Arxiv Preprint (Coming Soon!)] | [Models (Coming Soon!)] <br>
+###  [Project Website](https://algebra.baulab.info) | [Arxiv Preprint](https://arxiv.org/abs/2512.16902) | [Models (Coming Soon!)] <br>
 
 <div align='center'>
 <!-- <img src = 'assets/data_assign_generate.gif'> -->
@@ -34,9 +34,9 @@ This preprint can be cited as follows:
     title={In-Context Algebra}, 
     author={Eric Todd and Jannik Brinkmann and Rohit Gandikota and David Bau},
     year={2025},
-    eprint={2512.xxxxx},
+    eprint={2512.16902},
     archivePrefix={arXiv},
     primaryClass={cs.CL},
-    url={https://arxiv.org/abs/2512.xxxxx},
+    url={https://arxiv.org/abs/2512.16902},
 }
 ```
