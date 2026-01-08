@@ -17,13 +17,26 @@ conda env create -f algebra.yml
 conda activate algebra
 ```
 
-## Data
-<!-- At a high-level, the in-context algebra task involves simulating a mixture of finite algebraic groups.  -->
-<!-- Our in-context algebra sequences are generated as a mixture of finite algebraic groups.  -->
-More details about our data generating code can be found in the [`tasks`](/src/tasks) directory.
-
 ## Code
-More details on code organization coming soon.
+Our code is split into two parts:
+
+- The `experiments` directory contains notebooks with code for reproducing results/figures in the paper, including analysis of different mechanisms, empirical coverage, and model performance.
+
+- The `src` directory contains the main codebase, with util files for  training models, data generation, experiments, and analysis.
+
+## Data
+The in-context algebra task involves simulating a mixture of finite algebraic structures. The models we analyze are trained on groups, but we test our models on non-group structures as well.
+Our data-generating code + more details can be found in the [`src/tasks`](/src/tasks) directory.
+
+
+## Models
+### Download Pre-Trained Algebra Models
+You can download the model we analyze in our paper [here] (Link coming soon!)
+<!-- [here](https://algebra.baulab.info/weights/). -->
+
+
+### Train Your Own Algebra Model
+To train your own algebra model complete with checkpoints, you can use the `training.py` script (also check out the companion script `train_mix_10.sh`). We use `wandb` to keep track of training details, including logging metrics over time.
 
 
 ## Citing our work
