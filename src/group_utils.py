@@ -45,6 +45,53 @@ def generate_cayley_table(group):
     
     return torch.LongTensor(cayley_table)
 
+def get_pair_with_answer(group, vocab, answer_symbol, allow_identity_facts=False, coset_filter=None):
+    """
+    Sample a random group operation pair (a, b) that produces a specified answer.
+    
+    Given a target answer symbol, finds all pairs of group elements whose product
+    equals that answer, then randomly selects one. Optionally filters out pairs
+    involving the identity element or restricts to a specific subset of pairs.
+    
+    Args:
+        group: Group object with elements to sample from.
+        vocab (list): List of symbols assigned to group elements in order.
+        answer_symbol (str): The target answer symbol. Must be in vocab.
+        allow_identity_facts (bool): If False (default), excludes pairs where either
+                                     element is the identity (vocab[0]).
+        coset_filter (list, optional): If provided, only considers pairs that are
+                                       in this list of allowed pairs.
+    
+    Returns:
+        tuple: (pair, wordfor, elemfor) where:
+            - pair (tuple): Selected pair of Permutation objects (a, b) where a*b = answer_symbol
+            - wordfor (dict): Mapping from Permutation objects to symbols
+            - elemfor (dict): Mapping from symbols to Permutation objects
+    
+    Raises:
+        AssertionError: If answer_symbol is not in vocab.
+    """
+    assert answer_symbol in vocab, f"answer_symbol:{answer_symbol} must be in vocab:{vocab}"
+    # Create mappings between group elements and variables
+    elems = group.elements
+    wordfor = {g: vocab[i] for i, g in enumerate(elems)}
+    elemfor = {vocab[i]: g for i, g in enumerate(group.elements)}
+    
+    # Select a random pair that ends with the answer symbol
+    CT = generate_cayley_table(group)
+    possible_pairs = [(elemfor[vocab[x.item()]], elemfor[vocab[y.item()]]) for x,y in list(zip(*torch.where(CT == vocab.index(answer_symbol))))]
+    
+    # Optionally filter identity facts
+    if not allow_identity_facts:
+        possible_pairs = [x for x in possible_pairs if elemfor[vocab[0]] not in x]
+    
+    if coset_filter:
+        possible_pairs = [x for x in possible_pairs if x in coset_filter]
+    
+    pair = random.choice(possible_pairs)
+    assert wordfor[pair[0] * pair[1]] == answer_symbol
+
+    return pair, wordfor, elemfor
 
 def determine_associative_pairs(pair, group, drop_X=False, drop_R=False, drop_duplicates=True):
     """

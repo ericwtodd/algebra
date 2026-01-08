@@ -3,7 +3,9 @@ import torch
 from .group_utils import determine_associative_pairs
 from .coverage import check_copyable, check_reverse_copyable, check_identity
 
-### Targeted Sequence Construction
+###
+# Targeted Sequence Construction
+###
 
 def construct_cancellation_sequence(task, group=None, k_shots=None, include_identity=False, unshuffled=False):
     """
@@ -345,3 +347,5 @@ def sample_copy_counterfactual_pair(task, k_shots, fixed_groups=None, unshuffled
             valid = not_same_answer and not_same_query
 
     return copy_sequence, no_copy_sequence, v_copy, v_no_copy
+
+
