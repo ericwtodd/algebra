@@ -30,12 +30,12 @@ Our data-generating code + more details can be found in the [`src/tasks`](/src/t
 
 
 ## Models
-### Download Pre-Trained Algebra Models
+#### Download Pre-Trained Algebra Models
 You can download the model we analyze in our paper [here] (Link coming soon!)
 <!-- [here](https://algebra.baulab.info/weights/). -->
 
 
-### Train Your Own Algebra Model
+#### Train Your Own Algebra Model
 To train your own algebra model complete with checkpoints, you can use the `training.py` script (also check out the companion script `train_mix_10.sh`). We use `wandb` to keep track of training details, including logging metrics over time.
 
 
