@@ -31,12 +31,24 @@ Our data-generating code + more details can be found in the [`src/tasks`](/src/t
 
 ## Models
 
-#### Download Pre-Trained Algebra Models
+### Download Pre-Trained Algebra Models
 You can download the model analyzed in our paper from [algebra.baulab.info/weights/](https://algebra.baulab.info/weights/).
 
-The `mixrosette-facts-10-16-8heads/` directory contains the trained model weights, training checkpoints, and a `metadata.json` file with training configuration details. See `src/load_utils.py` or the experiment notebooks for examples of how to load these models.
+The `mixrosette-facts-10-16-8heads/` directory contains the trained model weights (`algebra_gpt_best.pt`), training checkpoints, and a `metadata.json` file with training configuration details. See `src/load_utils.py` or the experiment notebooks for examples of how to load these models. 
 
-#### Train Your Own Algebra Model
+At a minimum, you'll need to download the `metadata.json`, and at least one set of model weights (e.g. `algebra_gpt_best.pt`). See below for a minimal file structure for running the experiment notebooks.
+
+```
+outputs/
+└── mixrosette-facts-10-16-8heads/
+    ├── models/
+    │   └── algebra_gpt_best.pt    # Best checkpoint
+    └── metadata.json              # Training configuration
+```
+
+**Note:** I'm also looking into hosting these models on HuggingFace and will update later with more info.
+
+### Train Your Own Algebra Model
 To train your own algebra model with checkpoints, you can use the `training.py` script (see the companion script `train_mix_10.sh` for an example). We use `wandb` to track training metrics and details.
 
 
