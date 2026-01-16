@@ -318,7 +318,36 @@ def sample_distribution_batch(task, batch_size: int, k_shots: int = 200, distrib
 
 def sample_copy_counterfactual_pair(task, k_shots, fixed_groups=None, unshuffled=False, copy_distribution='copy', flipped_query=False):
     """
+    Samples a pair of counterfactual sequences: one solvable by copying, one not.
     
+    Creates two sequences with the same facts but different queries. The first sequence
+    has a query that can be solved by direct copying from the context. The second either
+    has a flipped version of the same query (swapping operand order) or a completely
+    different query that cannot be solved by copying.
+    
+    Args:
+        task: Task object with vocabulary and sampling methods.
+        k_shots (int): Number of facts in each sequence.
+        fixed_groups (optional): Group(s) to use instead of sampling randomly.
+        unshuffled (bool): If True, uses ordered vocabulary. If False, randomly
+                          samples vocabulary.
+        copy_distribution (str): Distribution type for the copyable sequence.
+                                Default is 'copy'.
+        flipped_query (bool): If True, creates the counterfactual by flipping the
+                             query operands (b,a instead of a,b). If False, samples
+                             a completely different non-copyable query.
+    
+    Returns:
+        tuple: (copy_sequence, no_copy_sequence, v_copy, v_no_copy)
+            - copy_sequence (str): Sequence with a copyable query
+            - no_copy_sequence (str): Sequence with a non-copyable query
+            - v_copy (str): Vocabulary used for the copy sequence
+            - v_no_copy (str): Vocabulary used for the no-copy sequence
+    
+    Note:
+        The function validates that:
+        - When flipped_query=True: The query is not a square (a != b)
+        - When flipped_query=False: The queries differ and produce different answers
     """
     valid = False
     while not valid:
