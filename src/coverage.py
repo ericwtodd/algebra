@@ -77,7 +77,8 @@ def check_closure_elimination_solvable(sequence):
     """
     facts = sequence.split(',')
     query = facts[-1]
-    
+
+    share_symbol = [fact for fact in facts[1:-1] if query[0] in fact or query[1] in fact]
     share_a_on_left = [fact for fact in facts[1:-1] if fact[0] == query[0]]
     share_b_on_right = [fact for fact in facts[1:-1] if fact[1] == query[1]]
 
@@ -86,7 +87,7 @@ def check_closure_elimination_solvable(sequence):
     def get_closure_set(facts):
         return set(''.join([x for x in facts]).replace('=', ''))
 
-    set_closure = get_closure_set(share_symbol_slots) # includes answers
+    set_closure = get_closure_set(share_symbol) # includes answers
     answer_closure = get_closure_set([x[-1] for x in share_symbol_slots])
     
     return len(set_closure - answer_closure) == 1 and (set_closure - answer_closure) == set(sequence[-1])

@@ -178,6 +178,24 @@ def generate_constrained_closure_variables(vocab, order, num_diff_symbols=1, int
 
 def get_coset_facts(group, holdout_pair, reverse_out=True, include_left=True, include_right=True):
     """
+    Generate left and right coset facts for a group operation, excluding a holdout pair.
+    
+    Creates sets of group operation pairs organized by coset structure. Left cosets
+    share the first element with the holdout pair, right cosets share the second element.
+    
+    Args:
+        group: Group object with elements and multiplication operation
+        holdout_pair (tuple): The (a, b) pair to hold out from the facts
+        reverse_out (bool): If True, also exclude the reverse pair (b, a). Default True.
+        include_left (bool): If True, generate left coset facts. Default True.
+        include_right (bool): If True, generate right coset facts. Default True.
+    
+    Returns:
+        dict: Dictionary with keys:
+            - 'holdout_pair': List containing the holdout pair
+            - 'available_pairs': All pairs except holdout (and optionally reverse)
+            - 'left_coset': Pairs where first element matches holdout's first element
+            - 'right_coset': Pairs where second element matches holdout's second element
     """
     # Create all possible pairs for the Cayley table
     elems = group.elements
@@ -208,6 +226,21 @@ def get_coset_facts(group, holdout_pair, reverse_out=True, include_left=True, in
 
 def construct_prompt(facts, holdout_pair, wordfor, num_shots):
     """
+    Construct a formatted prompt string from group operation facts.
+    
+    Creates a comma-separated string of equations in the form "xy=z" where x, y, z
+    are represented using the wordfor mapping. The prompt includes the specified
+    number of facts (sampled with replacement if needed) plus the holdout pair.
+    
+    Args:
+        facts (list): List of (a, b) tuples representing group operations
+        holdout_pair (tuple): The query pair to append at the end
+        wordfor (dict): Mapping from group elements to string tokens
+        num_shots (int): Number of fact examples to include in the prompt
+    
+    Returns:
+        str: Formatted prompt string starting with comma, containing equations
+            like ",ab=c,de=f,gh=i,xy="
     """
     include_set = facts.copy()
         
@@ -223,14 +256,46 @@ def construct_prompt(facts, holdout_pair, wordfor, num_shots):
     
     return ',' + ','.join(formatted_facts)
 
-def counterfactual_prompt_pair(task, group=None, num_shots=None, num_diff_symbols=1, intervention_type='C', allow_identity_facts=False, allow_cf_identity_base_facts=True):
-   """
-   """
-   if group is None:
-       group = task.sample_groups()[0] # Sample a single group
-   order = group.order()
-   
-   while True:
+def counterfactual_prompt_pair(task, group=None, num_shots=None, num_diff_symbols=1, intervention_type='C', allow_identity_facts=False, allow_cf_identity_base_facts=False):
+    """
+    Generate a matched pair of prompts for counterfactual intervention experiments.
+
+    Creates source and base prompts that differ in specific ways determined by the
+    intervention type. The prompts test whether models correctly implement closure
+    and cancellation operations by creating counterfactual scenarios.
+
+    Args:
+        task: Task object with vocabulary and group sampling methods
+        group: Specific group to use. If None, samples from task. Default None.
+        num_shots (int): Number of example facts in each prompt. If None, uses
+            maximum of source and base fact counts. Default None.
+        num_diff_symbols (int): Number of symbols that differ between source and base
+            closure sets. Automatically set to 1 for 'C' and 'LUR' types. Default 1.
+        intervention_type (str): Type of intervention. Options:
+            - 'C': Closure set intervention
+            - 'L': Left coset intervention
+            - 'R': Right coset intervention  
+            - 'LUR': Full cancellation coset intervention
+            Default 'C'.
+        allow_identity_facts (bool): Whether to allow identity element in facts.
+            Default False.
+        allow_cf_identity_base_facts (bool): Whether to allow counterfactual target
+            to appear in base facts. Default False.
+
+    Returns:
+        tuple: (s_S, s_B, variable_set_S, variable_set_B, counterfactual_target, order)
+            - s_S (str): Source prompt string
+            - s_B (str): Base prompt string
+            - variable_set_S (list): Source closure symbols
+            - variable_set_B (list): Base closure symbols
+            - counterfactual_target (list): Expected counterfactual answer
+            - order (int): Group order
+    """
+    if group is None:
+        group = task.sample_groups()[0] # Sample a single group
+    order = group.order()
+
+    while True:
         variable_set_S, variable_set_B, query_S, query_B = generate_constrained_closure_variables(task.vocab[:task.num_symbols], order, num_diff_symbols, intervention_type)
         left_coset_answers_S, left_coset_answers_B, right_coset_answers_S, right_coset_answers_B, counterfactual_target = find_closure_intervention_counterfactual(variable_set_S, variable_set_B, query_S, query_B, intervention_type)
 
@@ -262,10 +327,37 @@ def counterfactual_prompt_pair(task, group=None, num_shots=None, num_diff_symbol
             elif counterfactual_target[0] not in s_B[-4:-2]: 
                 break
 
-   return s_S, s_B, variable_set_S, variable_set_B, counterfactual_target, order
+    return s_S, s_B, variable_set_S, variable_set_B, counterfactual_target, order
 
-def sample_batch_counterfactual_prompt_pairs(task, batch_size, group=None, num_shots=None, num_diff_symbols=1, intervention_type='C', allow_identity_facts=False, allow_cf_identity_base_facts=True):
+def sample_batch_counterfactual_prompt_pairs(task, batch_size, group=None, num_shots=None, num_diff_symbols=1, intervention_type='C', allow_identity_facts=False, allow_cf_identity_base_facts=False):
     """
+    Generate a batch of counterfactual prompt pairs for training or evaluation.
+    
+    Creates multiple matched pairs of source and base prompts formatted as tensors
+    for batch processing. Each pair tests counterfactual reasoning about closure
+    and cancellation operations.
+    
+    Args:
+        task: Task object with vocabulary and tensor conversion methods
+        batch_size (int): Number of prompt pairs to generate
+        group: Specific group to use. If None, samples from task. Default None.
+        num_shots (int): Number of example facts per prompt. Default None.
+        num_diff_symbols (int): Symbols differing between source and base. Default 1.
+        intervention_type (str): Type of intervention ('C', 'L', 'R', or 'LUR'). 
+            Default 'C'.
+        allow_identity_facts (bool): Allow identity element in facts. Default False.
+        allow_cf_identity_base_facts (bool): Allow counterfactual in base facts. 
+            Default False.
+    
+    Returns:
+        dict: Batch dictionary containing:
+            - 'source_prompts' (Tensor): Source input sequences [batch, seq_len-1]
+            - 'source_targets' (Tensor): Source answer tokens [batch]
+            - 'base_prompts' (Tensor): Base input sequences [batch, seq_len-1]
+            - 'base_targets' (Tensor): Base answer tokens [batch]
+            - 'source_vocab' (tuple): Source vocabulary lists
+            - 'base_vocab' (tuple): Base vocabulary lists
+            - 'counterfactual_targets' (Tensor): Expected counterfactual answers [batch]
     """
 
     s1, s2, v1, v2, ct, o = zip(*[counterfactual_prompt_pair(task, group, num_shots=num_shots, num_diff_symbols=num_diff_symbols, intervention_type=intervention_type, allow_identity_facts=allow_identity_facts, allow_cf_identity_base_facts=allow_cf_identity_base_facts) for _ in range(batch_size)])
@@ -503,6 +595,24 @@ def subspace_optim(model, model_component, subspace, train, test, train_source_c
 
 def activations_to_pca_directions(cache, model_component_str):
     """
+    Compute principal component directions from cached model activations.
+    
+    Performs position-wise centering and singular value decomposition on model
+    activations to extract principal component directions. Each token position
+    is centered independently before combining for SVD.
+    
+    Args:
+        cache (dict): Dictionary mapping component strings to activation tensors
+        model_component_str (str): Key for the component to analyze
+            (e.g., 'model.transformer.h[3].attn')
+    
+    Returns:
+        Tensor: Principal component matrix of shape [hidden_dim, hidden_dim]
+            where columns are principal components ordered by explained variance
+        
+    Note:
+        Activations are centered per-position to preserve position-specific
+        distributional properties before computing global principal components.
     """
 
     # Get activations for the current layer
@@ -537,27 +647,39 @@ def mask_optim(model, model_component, mask, directions, train, test, train_sour
                intervention_index=-1, n_steps:int=1000, verbose:bool=False, batch_size:int=50, 
                shuffle:bool=True, seed:int=42, eval_interval:int=2):
     """
-    Optimize a mask that picks the best directions (from PCA directions) to flip predictions on p2 to targets.
-    Now supports batched processing of prompts with shuffling for better memory efficiency and training.
+    Optimize a binary mask to select which PCA directions best induce counterfactuals.
+    
+    Trains a soft mask (values in [0,1]) to weight PCA directions, selecting those
+    that most effectively change model predictions from base to counterfactual targets
+    when intervening on activations.
     
     Args:
-        model: The model to optimize
-        model_component: The component to patch
-        mask: Initial mask to optimize
-        directions: Directions tensor
-        train: Dictionary containing 'base_prompts' and 'counterfactual_targets' for training
-        test: Dictionary containing 'base_prompts' and 'counterfactual_targets' for evaluation
-        train_source_cache: Cache for training activations
-        test_source_cache: Cache for test activations
-        loss_fn: Loss function
-        optimizer: Optimizer
-        intervention_index: Index to intervene at
-        n_steps: Number of optimization steps
-        verbose: Whether to print progress
-        batch_size: Batch size for processing prompts
-        shuffle: Whether to shuffle data between steps
-        seed: Random seed for reproducibility
-        eval_interval: How often to evaluate on the test set (steps)
+        model: Language model to intervene on
+        model_component: Specific component to patch (e.g., attention layer)
+        mask (Tensor): Initial mask to optimize, shape [num_directions]
+        directions (Tensor): PCA directions matrix [hidden_dim, num_directions]
+        train (dict): Training data with 'base_prompts' and 'counterfactual_targets'
+        test (dict): Test data with same structure as train
+        train_source_cache (Tensor): Cached source activations for training
+        test_source_cache (Tensor): Cached source activations for testing
+        loss_fn: Loss function (typically CrossEntropyLoss)
+        optimizer: Optimizer for mask parameters
+        intervention_index (int): Token position to intervene at. Default -1 (last).
+        n_steps (int): Number of optimization steps. Default 1000.
+        verbose (bool): Whether to show progress bar with metrics. Default False.
+        batch_size (int): Batch size for processing prompts. Default 50.
+        shuffle (bool): Whether to shuffle training data each step. Default True.
+        seed (int): Random seed for reproducibility. Default 42.
+        eval_interval (int): Steps between test set evaluations. Default 2.
+    
+    Returns:
+        dict: Results dictionary containing:
+            - 'mask' (Tensor): Final optimized mask
+            - 'best_mask' (Tensor): Mask achieving best test accuracy
+            - 'losses' (list): Training loss per step
+            - 'train_accs' (list): Training accuracy per step
+            - 'test_accs' (list): Test accuracy at evaluation intervals
+            - 'best_test_acc' (float): Best test accuracy achieved
     """
     losses = []
     accs = []
@@ -720,9 +842,34 @@ class SubspaceExperimentConfig:
 
 def run_subspace_optimization_experiment(model, task, config: SubspaceExperimentConfig) -> Dict[str, Any]:
     """
-    Run a complete subspace optimization experiment.
+    Run a complete subspace optimization experiment with the given configuration.
     
-    Returns dict with 'results', 'subspace', and 'config'.
+    Executes a full experimental pipeline: samples counterfactual prompt pairs,
+    caches activations, initializes and trains a Householder subspace to induce
+    counterfactual predictions, and evaluates intervention effectiveness.
+    
+    Args:
+        model: Pre-trained language model to analyze
+        task: Task object providing vocabulary and group sampling
+        config (SubspaceExperimentConfig): Configuration dataclass specifying:
+            - Model component and layer to intervene on
+            - Subspace dimensionality and intervention type
+            - Training hyperparameters (batch size, learning rate, steps)
+            - Data generation parameters (num_shots, constraint_type)
+    
+    Returns:
+        dict: Complete experiment results containing:
+            - 'results' (dict): Training metrics (losses, accuracies, best mask)
+            - 'subspace' (Tensor): Learned subspace directions [hidden_dim, num_directions]
+            - 'config' (SubspaceExperimentConfig): Configuration used
+            
+            The 'results' dict includes:
+            - 'losses': Training loss per step
+            - 'train_accs': Training accuracy per step  
+            - 'test_accs': Test accuracy at evaluation intervals
+            - 'best_test_acc': Best test accuracy
+            - 'original_accuracy': Model's original accuracy on base prompts
+            - 'intervention_accuracy': Accuracy on counterfactual targets after intervention
     """
     
     # Setup
