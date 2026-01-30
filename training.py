@@ -39,6 +39,7 @@ def main(args) -> None:
     task_config_str = '-'.join(f"{k}_{v}" for k, v in args.task_config.items()) if args.task_config else "no_config"
     wandb_run_name = f"{args.task_name}-{task_config_str}-{args.d_model}dmodel-{args.d_mlp}dmlp-{args.block_size}block-{args.n_layers}layers-{args.n_heads}heads-{args.lr}lr-{args.batch_size}batch-{args.positional_encoding}pos-{args.k_shots}shots-{args.n_steps}steps-{args.seed}seed"
     training_params = TrainingParams(
+        task_config=args.task_config,
         n_steps=args.n_steps,
         batch_size=args.batch_size,
         output_dir=args.output_dir,
