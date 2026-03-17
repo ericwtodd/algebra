@@ -1,6 +1,6 @@
 # In-Context Algebra
 
-###  [Project Website](https://algebra.baulab.info) | [Arxiv Preprint](https://arxiv.org/abs/2512.16902) | [Model Weights](https://algebra.baulab.info/weights) <br>
+###  [Project Website](https://algebra.baulab.info) | [Arxiv Preprint](https://arxiv.org/abs/2512.16902) | [Model Weights](https://algebra.baulab.info/weights) | [OpenReview](https://openreview.net/forum?id=J2peqXPQbB) <br>
 
 <div align='center'>
 <!-- <img src = 'assets/data_assign_generate.gif'> -->
@@ -53,8 +53,19 @@ To train your own algebra model with checkpoints, you can use the `training.py` 
 
 
 ## Citing our work
-This preprint can be cited as follows:
+This work appeared at ICLR 2026. The paper can be cited as follows:
 
+```bibtex
+@inproceedings{todd2026incontext,
+    title={In-Context Algebra},
+    author={Eric Todd and Jannik Brinkmann and Rohit Gandikota and David Bau},
+    booktitle={The Fourteenth International Conference on Learning Representations},
+    url={https://openreview.net/forum?id=J2peqXPQbB},
+    year={2026},
+    note={arXiv:2512.16902}
+}
+```
+<!-- 
 ```bibtex
 @misc{todd2025incontextalgebra,
     title={In-Context Algebra}, 
@@ -65,4 +76,4 @@ This preprint can be cited as follows:
     primaryClass={cs.CL},
     url={https://arxiv.org/abs/2512.16902},
 }
-```
+``` -->
