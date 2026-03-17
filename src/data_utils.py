@@ -7,7 +7,7 @@ from .coverage import check_copyable, check_reverse_copyable, check_identity
 # Targeted Sequence Construction
 ###
 
-def construct_cancellation_sequence(task, group=None, k_shots=None, include_identity=False, unshuffled=False):
+def construct_cancellation_sequence(task, group=None, k_shots=None, include_identity=False, unshuffled=False, include_row_column=True):
     """
     Constructs a sequence that requires closure-based cancellation reasoning to solve.
     
@@ -77,13 +77,15 @@ def construct_cancellation_sequence(task, group=None, k_shots=None, include_iden
     num_facts_needed = k_shots - 1
     
     sequence = []
-    # Start with one copy of each fact (ensuring all facts appear at least once)
-    for i in range(len(left_right_facts)):
-        a, b = left_right_facts[i]
-        c = (a[0] * b[0], a[1])
-        sequence.append([',', wordfor[a], wordfor[b], '=', wordfor[c]])
+    if include_row_column:
+        # Start with one copy of each fact (ensuring all facts appear at least once)
+        for i in range(len(left_right_facts)):
+            a, b = left_right_facts[i]
+            c = (a[0] * b[0], a[1])
+            sequence.append([',', wordfor[a], wordfor[b], '=', wordfor[c]])
     # Fill remaining slots with random samples from left_right_facts
-    for i in range(num_facts_needed - len(left_right_facts)):
+    num_mandatory = len(left_right_facts) if include_row_column else 0
+    for i in range(num_facts_needed - num_mandatory):
         a, b = task.prng.choice(left_right_facts)
         c = (a[0] * b[0], a[1])
         sequence.append([',', wordfor[a], wordfor[b], '=', wordfor[c]])
@@ -239,7 +241,7 @@ def sample_distribution_sequence(task, k_shots: int = 200, distribution: str = N
         condition = lambda s: not check_copyable(s) and not check_reverse_copyable(s) and check_identity(s)
     
     elif distribution == "cancel":
-        return construct_cancellation_sequence(task, group=fixed_groups, k_shots=k_shots, unshuffled=unshuffled)
+        return construct_cancellation_sequence(task, group=fixed_groups, k_shots=k_shots, unshuffled=unshuffled, **distribution_kwargs)
     
     elif distribution == 'associate':
         return construct_associative_sequence(task, group=fixed_groups, k_shots=k_shots, unshuffled=unshuffled, **distribution_kwargs)
