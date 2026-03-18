@@ -105,22 +105,22 @@ def head_output_to_vocab(model, inputs, head, token_idx=-1):
     
     Returns:
         torch.Tensor: Vocabulary predictions from this head's output.
-            Shape: (1, vocab_size)
+            Shape: (batch_size, vocab_size)
     """
     if isinstance(head, tuple):
         layer_index, head_index = head
 
     logit_lens = lambda x: model.lm_head(model.transformer.ln_f(x))
 
-    hidden_size = model.config.n_embd
-    head_dim = hidden_size // model.config.n_head
-    head_out = torch.zeros((1, model.config.n_embd)).to(model.device)
+    batch_size = inputs.shape[0]
+    head_dim = model.config.n_embd // model.config.n_head
+    head_out = torch.zeros((batch_size, model.config.n_embd)).to(model.device)
 
     with model.trace(inputs):
         attn_in = model.transformer.h[layer_index].attn.c_proj.input
-        x_1 = attn_in.reshape(1, -1, model.config.n_head, model.config.n_embd // model.config.n_head)
-        head_out[:,head_index*head_dim:(head_index+1)*head_dim] = x_1[:,token_idx,head_index].save()
-    
+        x_1 = attn_in.reshape(batch_size, -1, model.config.n_head, head_dim)
+        head_out[:, head_index*head_dim:(head_index+1)*head_dim] = x_1[:, token_idx, head_index].save()
+
     head_out_proj = model.transformer.h[layer_index].attn.c_proj(head_out)
 
     return logit_lens(head_out_proj)

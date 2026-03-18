@@ -93,6 +93,67 @@ def get_pair_with_answer(group, vocab, answer_symbol, allow_identity_facts=False
 
     return pair, wordfor, elemfor
 
+def get_pair_with_symbol(group, vocab, symbol, allow_identity_facts=False, slot=None):
+    """Returns a random (a, b) pair where `symbol` appears in the specified slot (or either).
+
+    Args:
+        group: Sympy PermutationGroup.
+        vocab (list): Symbols assigned to group elements in order.
+        symbol (str): Symbol that must appear in the pair.
+        allow_identity_facts (bool): If False, excludes pairs where either element is the identity.
+        slot (str or None): 'a', 'b', or None (either slot).
+
+    Returns:
+        tuple: (pair, wordfor, elemfor)
+    """
+    assert symbol in vocab
+    assert slot is None or slot in ['a', 'b']
+    if symbol == vocab[0] and not allow_identity_facts:
+        raise ValueError("symbol is identity variable, but allow_identity_facts is False")
+
+    elems = group.elements
+    wordfor = {g: vocab[i] for i, g in enumerate(elems)}
+    elemfor = {vocab[i]: g for i, g in enumerate(elems)}
+
+    if slot is None:
+        possible_pairs = [(a, b) for a in elems for b in elems
+                          if (a == elemfor[symbol] or b == elemfor[symbol])]
+    elif slot == 'a':
+        possible_pairs = [(elemfor[symbol], b) for b in elems]
+    elif slot == 'b':
+        possible_pairs = [(a, elemfor[symbol]) for a in elems]
+
+    if not allow_identity_facts:
+        possible_pairs = [x for x in possible_pairs if elemfor[vocab[0]] not in x]
+
+    return random.choice(possible_pairs), wordfor, elemfor
+
+
+def get_pair_without_symbol(group, vocab, symbol, allow_identity_facts=False):
+    """Returns a random (a, b) pair where `symbol` does NOT appear in either slot.
+
+    Args:
+        group: Sympy PermutationGroup.
+        vocab (list): Symbols assigned to group elements in order.
+        symbol (str): Symbol that must NOT appear in the pair.
+        allow_identity_facts (bool): If False, excludes pairs where either element is the identity.
+
+    Returns:
+        tuple: (pair, wordfor, elemfor)
+    """
+    assert symbol in vocab
+
+    elems = group.elements
+    wordfor = {g: vocab[i] for i, g in enumerate(elems)}
+    elemfor = {vocab[i]: g for i, g in enumerate(elems)}
+
+    possible_pairs = [(a, b) for a in elems for b in elems
+                      if a != elemfor[symbol] and b != elemfor[symbol]]
+    if not allow_identity_facts:
+        possible_pairs = [x for x in possible_pairs if elemfor[vocab[0]] not in x]
+
+    return random.choice(possible_pairs), wordfor, elemfor
+
 def determine_associative_pairs(pair, group, drop_X=False, drop_R=False, drop_duplicates=True):
     """
     Finds all triples of element-pairs that satisfy associativity for a given pair.
